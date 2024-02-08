@@ -29,9 +29,9 @@ int main(int argc, char const *argv[])
         error_handling("socket() error");
 
     memset(&serv_addr, 0, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(atoi(argv[1]));
+    serv_addr.sin_family = AF_INET;                // 地址族（address family）IPv4
+    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); // 地址,INADDR_ANY 表示接受来自任何网络接口的连接
+    serv_addr.sin_port = htons(atoi(argv[1]));     // 端口
 
     // 调用 bind 函数分配 IP 地址和端口号
     if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr) == -1))
@@ -52,4 +52,11 @@ int main(int argc, char const *argv[])
     close(clnt_sock);
     close(serv_sock);
     return 0;
+}
+
+void error_handling(char *message)
+{
+    fputs(message, stderr);
+    fputc('\n', stderr);
+    exit(1);
 }
