@@ -34,7 +34,7 @@ int main(int argc, char const *argv[])
     serv_addr.sin_port = htons(atoi(argv[1]));     // 端口
 
     // 调用 bind 函数分配 IP 地址和端口号
-    if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr) == -1))
+    if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("bind() error");
 
     // 调用 accept 函数将套接字转为可连接接收状态

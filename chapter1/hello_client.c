@@ -16,7 +16,7 @@ int main(int argc, char const *argv[])
 
     if (argc != 3)
     {
-        printf("Usage: %s <IP> <port> \n", argv[0]);
+        printf("Usage: %s <IP> <Port> \n", argv[0]);
         exit(1);
     }
     // 创建套接字，但此时套接字并不马上分为服务器端和客户端。
@@ -32,7 +32,7 @@ int main(int argc, char const *argv[])
     serv_addr.sin_port = htons(atoi(argv[2]));      // 端口
 
     // 调用connect函数向服务器端发送连接请求。
-    if (connect(&serv_addr, 0, sizeof(serv_addr)))
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("connnect() error");
 
     str_len = read(sock, message, sizeof(message) - 1);
