@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
         else
             printf("Connected client %d \n", i + 1);
 
-        // 实际完成回声服务，原封不动的传输读取的字符串
+        // 实际完成回声服务，原封不动的回传读取的字符串
         while ((str_len = read(clnt_sock, message, BUF_SIZE)) != 0)
             write(clnt_sock, message, str_len);
 
