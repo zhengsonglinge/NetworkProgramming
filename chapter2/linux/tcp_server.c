@@ -37,7 +37,7 @@ int main(int argc, char const *argv[])
     if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
         error_handling("bind() error");
 
-    // 调用 accept 函数将套接字转为可连接接收状态
+    // 调用 listen 函数将套接字转为可连接接收状态
     if (listen(serv_sock, 5) == -1)
         error_handling("listen() error");
 

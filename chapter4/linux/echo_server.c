@@ -4,18 +4,18 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+
+#define BUF_SIZE 1024
 void error_handling(char *message);
 
 int main(int argc, char const *argv[])
 {
-    int serv_sock;
-    int clnt_sock;
+    int serv_sock, clnt_sock;
+    char message[BUF_SIZE];
+    int str_len, i;
 
-    struct sockaddr_in serv_addr;
-    struct sockaddr_in clnt_addr;
+    struct sockaddr_in serv_addr, clnt_addr;
     socklen_t clnt_addr_size;
-
-    char message[] = "Hello World!";
 
     if (argc != 2)
     {
@@ -42,14 +42,25 @@ int main(int argc, char const *argv[])
         error_handling("listen() error");
 
     clnt_addr_size = sizeof(clnt_addr);
-    // 调用 accept 函数受理连接请求。如果在没有连接请求的情况下调用该函数，则不会返回，直到有连接请求为止。
-    clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-    if (clnt_sock == -1)
-        error_handling("accept() error");
+    // 循环调用 accept 函数，依次向客户端提供服务
+    for (i = 0; i < 5; i++)
+    {
+        clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+        if (clnt_sock == -1)
+            error_handling("accept() error");
+        else
+            printf("Connected client %d \n", i + 1);
 
-    // write 函数用于传输数据，执行到本行说明有了连接请求
-    write(clnt_sock, message, sizeof(message));
-    close(clnt_sock);
+        // 实际完成回声服务，原封不动的传输读取的字符串
+        while ((str_len = read(clnt_sock, message, BUF_SIZE)) != 0)
+            write(clnt_sock, message, str_len);
+
+        // 针对套接字调用close函数，向连接的相应套接字发送EOF。
+        // 换言之，客户端套接字若调用 close 函数，则 while 条件变成假（false），执行服务端 close 代码
+        close(clnt_sock);
+    }
+
+    // 向5个客户端提供服务后关闭服务器端套接字并终止程序。
     close(serv_sock);
     return 0;
 }
