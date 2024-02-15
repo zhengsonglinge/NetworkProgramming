@@ -13,7 +13,7 @@ int main(int argc, char const *argv[])
     int sock;
     struct sockaddr_in serv_addr;
     char message[BUF_SIZE];
-    int str_len;
+    int str_len, recv_len, recv_cnt;
 
     if (argc != 3)
     {
@@ -48,11 +48,18 @@ int main(int argc, char const *argv[])
         if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
             break;
 
-        write(sock, message, strlen(message));
-        str_len = read(sock, message, BUFSIZ - 1);
-        // 在接收到从服务器端发送的消息后，将消息字符串的末尾设置为 null 终止字符，
-        // 以确保在打印消息时不会打印出未初始化的内存内容。
-        message[str_len] = 0;
+        str_len = write(sock, message, strlen(message));
+
+        // 循环调用 read 函数直到接收到的数据量大于字符串长度
+        recv_len = 0;
+        while (recv_len < str_len)
+        {
+            recv_cnt = read(sock, message, BUFSIZ - 1);
+            if (recv_cnt == -1)
+                error_handling("read() error!");
+            recv_len += recv_cnt;
+        }
+        message[recv_len] = 0;
         printf("Message from server : %s", message);
     }
     close(sock);
