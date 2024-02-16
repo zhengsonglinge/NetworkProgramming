@@ -48,7 +48,9 @@ int main(int argc, char const *argv[])
     for (i = 0; i < opnd_cnt; i++)
     {
         printf("Operand %d: ", i + 1);
-        scanf("%d", (int *)&opmsg[i * OPSZ + 1]); // +1 是因为 0 位存储了待运算数字个数
+        // 将 opmsg 强转为 int 数组并存储待处理数据
+        // +1 是因为 0 位存储了待运算数字个数
+        scanf("%d", (int *)&opmsg[i * OPSZ + 1]);
     }
 
     // 删掉缓冲区中的字符 \n
