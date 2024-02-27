@@ -24,6 +24,8 @@ int main(int argc, char const *argv[])
     pid_t pid;
     struct sigaction act;
 
+    int fds[2];
+
     if (argc != 2)
     {
         printf("Usage: %s <port>\n", argv[0]);
@@ -55,10 +57,25 @@ int main(int argc, char const *argv[])
     if (listen(serv_sock, 5) == -1)
         error_handling("listen() error");
 
-    // 循环调用 accept 函数，依次向客户端提供服务
+    // 实现子进程写入文件操作
+    pipe(fds);    // 创建管道，用于将客户端传输来的数据写入文件
+    pid = fork(); // 创建子进程来写文件
+    if (pid == 0)
+    {
+        FILE *fp = fopen("echomsg.txt", "wt");
+        char msgbuf[BUF_SIZE];
+        // 当字符串达到 10 个时关闭文件
+        for (int i = 0; i < 10; i++)
+        {
+            int len = read(fds[0], msgbuf, BUF_SIZE);
+            fwrite((void *)msgbuf, 1, len, fp);
+        }
+        fclose(fp);
+        return 0;
+    }
+
     while (1)
     {
-        // 每接收一个客户端即创建一个服务端套接字
         clnt_addr_size = sizeof(clnt_addr);
         clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
         if (clnt_sock == -1)
@@ -66,8 +83,6 @@ int main(int argc, char const *argv[])
         else
             puts("new client connected...");
 
-        // 每接收一个客户端创建一个子进程
-        // 子进程完全复制父进程的资源，clnt_sock 套接字文件描述符也同时复制了一份
         pid = fork();
 
         if (pid == -1)
@@ -81,14 +96,17 @@ int main(int argc, char const *argv[])
             close(serv_sock);
             // 子进程提供回声服务
             while ((str_len = read(clnt_sock, buf, BUF_SIZE)) != 0)
+            {
                 write(clnt_sock, buf, str_len);
+                // 通过 fds[1] 向管道传输数据
+                write(fds[1], buf, str_len);
+            }
             close(clnt_sock);
             puts("client disconnected...");
             return 0;
         }
         else
             // 父进程运行区域
-            // clnt_sock 已经复制给子进程了，因此父进程的就可以关闭了
             close(clnt_sock);
     }
     close(serv_sock);
